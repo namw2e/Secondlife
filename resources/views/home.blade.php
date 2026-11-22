@@ -126,7 +126,7 @@
                 </span>
               </div>
               <div class="pcard-foot">
-                <span>⭐ {{ $p->avgRating() }} · {{ $p->penjual->nama }}</span>
+                <span>⭐ {{ $p->penjual->avgSellerRating() }} · {{ $p->penjual->nama }}</span>
                 <span>📍{{ $p->penjual->lokasi ?? '' }}</span>
               </div>
             </div>

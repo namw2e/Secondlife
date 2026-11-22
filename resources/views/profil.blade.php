@@ -22,6 +22,9 @@
   <div class="tabs">
     <a class="tab {{ request('tab','edit') === 'edit' ? 'active' : '' }}" href="{{ route('profil', ['tab'=>'edit']) }}">Edit Profil</a>
     <a class="tab {{ request('tab') === 'password' ? 'active' : '' }}" href="{{ route('profil', ['tab'=>'password']) }}">Ganti Password</a>
+    @if($user->isPenjual())
+      <a class="tab {{ request('tab') === 'reputasi' ? 'active' : '' }}" href="{{ route('profil', ['tab'=>'reputasi']) }}"> Review</a>
+    @endif
     @if(!$user->isPenjual())
       <a class="tab" href="{{ route('daftar.penjual') }}" style="color:var(--accent);font-weight:700"> Jadi Penjual →</a>
     @endif
@@ -99,6 +102,75 @@
           </button>
         </form>
       </div>
+    </div>
+
+  @elseif(request('tab') === 'reputasi')
+    <!-- REPUTASI PENJUAL -->
+    @php
+      $reviews     = $user->sellerReviewsReceived()->with('reviewer')->latest()->get();
+      $avgRating   = $user->avgSellerRating();
+      $totalReview = $reviews->count();
+    @endphp
+    <div style="max-width:640px;margin-top:1.5rem">
+
+      {{-- Summary Card --}}
+      <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #FDE68A;border-radius:16px;padding:24px;display:flex;align-items:center;gap:20px;margin-bottom:1.5rem">
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-size:48px;font-weight:900;color:#D97706;line-height:1">{{ $avgRating }}</div>
+          <div style="font-size:20px;color:#F59E0B;margin:4px 0">
+            @for($i = 1; $i <= 5; $i++)
+              <span style="color:{{ $i <= round((float)$avgRating) ? '#F59E0B' : '#D1D5DB' }}">★</span>
+            @endfor
+          </div>
+          <div style="font-size:12px;color:#92400E;font-weight:600">{{ $totalReview }} ulasan</div>
+        </div>
+        <div>
+          <h3 style="font-size:17px;font-weight:800;color:#92400E;margin:0 0 6px">Reputasi Penjual Anda</h3>
+          <p style="font-size:13px;color:#78350F;margin:0;line-height:1.6">
+            Rating ini dikumpulkan dari ulasan pembeli setelah transaksi selesai.
+            Semakin tinggi rating, semakin dipercaya oleh calon pembeli.
+          </p>
+        </div>
+      </div>
+
+      {{-- Daftar Review --}}
+      @if($reviews->isEmpty())
+        <div style="background:var(--bg);border:2px dashed var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--text2)">
+          <div style="font-size:40px;margin-bottom:10px">📭</div>
+          <p style="font-size:14px;font-weight:600">Belum ada ulasan</p>
+          <p style="font-size:13px;margin:0">Ulasan akan muncul setelah pembeli menyelesaikan transaksi dengan Anda.</p>
+        </div>
+      @else
+        <div style="display:flex;flex-direction:column;gap:12px">
+          @foreach($reviews as $rv)
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#FF8C42);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0">
+                    {{ strtoupper(substr($rv->reviewer->nama ?? '?', 0, 2)) }}
+                  </div>
+                  <div>
+                    <strong style="font-size:14px">{{ $rv->reviewer->nama ?? 'Anonim' }}</strong>
+                    <div style="font-size:11px;color:var(--text2)">{{ $rv->created_at->format('d M Y') }}</div>
+                  </div>
+                </div>
+                <div style="font-size:16px;color:#F59E0B;flex-shrink:0">
+                  @for($i = 1; $i <= 5; $i++)
+                    <span style="color:{{ $i <= $rv->rating ? '#F59E0B' : '#D1D5DB' }}">★</span>
+                  @endfor
+                </div>
+              </div>
+              @if($rv->comment)
+                <p style="font-size:13px;color:var(--text);margin:0;padding:10px;background:var(--bg);border-radius:8px;line-height:1.6">
+                  "{{ $rv->comment }}"
+                </p>
+              @else
+                <p style="font-size:12px;color:var(--text2);margin:0;font-style:italic">Tidak ada komentar</p>
+              @endif
+            </div>
+          @endforeach
+        </div>
+      @endif
     </div>
 
   @else

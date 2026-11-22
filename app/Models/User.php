@@ -5,10 +5,29 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Auth\Passwords\CanResetPassword;
 
-class User extends Authenticatable
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder|User where($column, $operator = null, $value = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|User find($id, $columns = array())
+ * @method static \Illuminate\Database\Eloquent\Builder|User first($columns = array())
+ * @method static \Illuminate\Database\Eloquent\Builder|User with($relations)
+ * @method static User create(array $attributes = array())
+ * @method bool update(array $attributes = array(), array $options = array())
+ * @method bool hasRole(string $role)
+ * @method bool isAdmin()
+ * @method bool isPenjual()
+ * @method bool isPembeli()
+ * @method string getPrimaryRole()
+ * @method BelongsToMany roles()
+ * @method ?string fotoKtmUrl()
+ * @method string waLink(string $pesan = '')
+ */
+class User extends Authenticatable implements CanResetPasswordContract
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, CanResetPassword;
 
     protected $table = 'users';
     protected $primaryKey = 'id_user';
@@ -27,7 +46,7 @@ class User extends Authenticatable
     ];
 
     // ── RELATIONS ─────────────────────────────────────────────
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles', 'id_user', 'id_role');
     }
@@ -45,6 +64,18 @@ class User extends Authenticatable
     public function transaksiSebagaiPenjual()
     {
         return $this->hasMany(Transaksi::class, 'id_penjual', 'id_user');
+    }
+
+    // Review yang DITERIMA user sebagai penjual
+    public function sellerReviewsReceived()
+    {
+        return $this->hasMany(SellerReview::class, 'seller_id', 'id_user');
+    }
+
+    // Review yang DIBERIKAN user sebagai pembeli
+    public function sellerReviewsGiven()
+    {
+        return $this->hasMany(SellerReview::class, 'reviewer_id', 'id_user');
     }
 
     public function requestKategori()
@@ -75,6 +106,18 @@ class User extends Authenticatable
         return $this->foto_ktm
             ? asset('storage/ktm/' . $this->foto_ktm)
             : null;
+    }
+
+    // Rata-rata rating penjual (dari seller_reviews)
+    public function avgSellerRating(): string
+    {
+        // Jika relasi sudah eager-loaded, pakai collection agar tidak query DB lagi
+        if ($this->relationLoaded('sellerReviewsReceived')) {
+            $avg = $this->sellerReviewsReceived->avg('rating');
+        } else {
+            $avg = $this->sellerReviewsReceived()->avg('rating');
+        }
+        return $avg ? number_format($avg, 1) : '0.0';
     }
 
     public function waLink(string $pesan = ''): string

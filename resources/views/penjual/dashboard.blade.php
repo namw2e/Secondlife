@@ -29,7 +29,7 @@
     </div>
     <div class="dash-card">
       <div class="dash-label">⏳ Perlu Diproses</div>
-      <div class="dash-value" style="{{ ($statTransaksi['menunggu_konfirmasi']??0) > 0 ? 'color:var(--red)' : '' }}">
+      <div class="dash-value {{ ($statTransaksi['menunggu_konfirmasi'] ?? 0) > 0 ? 'text-danger' : '' }}">
         {{ $statTransaksi['menunggu_konfirmasi'] ?? 0 }}
       </div>
     </div>
@@ -42,7 +42,9 @@
     <div class="dash-card">
       <div class="dash-label">💬 Review Belum Dibalas</div>
       @php $belumBalas = $reviewList->filter(fn($r) => !$r->balasan_penjual)->count(); @endphp
-      <div class="dash-value" style="{{ $belumBalas > 0 ? 'color:var(--red)' : '' }}">{{ $belumBalas }}</div>
+      <div class="dash-value {{ $belumBalas > 0 ? 'text-danger' : '' }}">
+      {{ $belumBalas }}
+</div>
     </div>
   </div>
 
@@ -172,7 +174,11 @@
                     default               => ''
                   };
                 @endphp
-                <span style="{{ $stC }};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">{{ $t->labelStatus() }}</span>
+                <span
+                class="status-badge"
+                style="background:#dcfce7;color:#166534">
+                {{ $t->labelStatus() }}
+                </span>
               </div>
             </div>
 

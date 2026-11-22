@@ -13,7 +13,7 @@ class ProdukController extends Controller
 {
     public function detail($id)
     {
-        $produk = Produk::with(['kategori', 'penjual', 'foto', 'review.user'])
+        $produk = Produk::with(['kategori', 'penjual.sellerReviewsReceived', 'foto', 'review.user'])
             ->findOrFail($id);
 
         $produkLain = Produk::with(['foto'])

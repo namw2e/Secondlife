@@ -88,8 +88,12 @@ class AuthController extends Controller
     public function showDaftarPenjual()
     {
         // Jika user sudah login dan sudah menjadi penjual, redirect ke dashboard
-        if (Auth::check() && Auth::user()->isPenjual()) {
-            return redirect()->route('penjual.dashboard');
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            if ($user->isPenjual()) {
+                return redirect()->route('penjual.dashboard');
+            }
         }
         return view('auth.daftar_penjual');
     }
@@ -98,6 +102,7 @@ class AuthController extends Controller
     {
         // Jika user sudah login, upgrade mereka menjadi penjual
         if (Auth::check()) {
+            /** @var \App\Models\User $user */
             $user = Auth::user();
             
             // Validasi hanya untuk file KTM dan data tambahan

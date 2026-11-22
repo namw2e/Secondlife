@@ -140,5 +140,8 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
+        // Seed seller reviews
+        $this->call(SellerReviewSeeder::class);
     }
 }

@@ -20,7 +20,10 @@
                placeholder="email@mahasiswa.ac.id" value="{{ old('email') }}" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Password</label>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label">Password</label>
+          <a href="{{ route('password.request') }}" style="font-size: 13px; text-decoration: none; color: var(--primary-color)">Lupa Password?</a>
+        </div>
         <input class="form-control" type="password" name="password"
                placeholder="Password kamu" required>
       </div>

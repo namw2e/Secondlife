@@ -195,10 +195,65 @@
         @endif
 
         @if($transaksi->status === 'selesai')
-          @php $produkReview = $transaksi->detail->first()?->produk; @endphp
+          @php
+            $produkReview     = $transaksi->detail->first()?->produk;
+            $penjualTarget    = $transaksi->penjual;
+            $sudahReviewSeller = $penjualTarget
+              ? \App\Models\SellerReview::where('reviewer_id', auth()->id())
+                  ->where('seller_id', $penjualTarget->id_user)
+                  ->first()
+              : null;
+          @endphp
+
+          {{-- Link ulasan produk --}}
           @if($produkReview)
             <a class="btn btn-ghost btn-full" href="{{ route('produk.detail', $produkReview->id_produk) }}#review"
-               style="margin-top:8px;font-size:13px">⭐ Beri Ulasan</a>
+               style="margin-top:8px;font-size:13px">📝 Beri Ulasan Produk</a>
+          @endif
+
+          {{-- Form / Tampilan Review Penjual --}}
+          @if($penjualTarget && auth()->id() !== $penjualTarget->id_user)
+            <div style="margin-top:12px;background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:14px">
+              <p style="font-size:13px;font-weight:700;margin-bottom:10px">⭐ Review Penjual</p>
+
+              @if($sudahReviewSeller)
+                {{-- Sudah review — tampilkan review yang ada --}}
+                <div style="background:#FEFCE8;border:1.5px solid #FDE047;border-radius:10px;padding:12px">
+                  <div style="margin-bottom:6px">
+                    @for($i = 1; $i <= 5; $i++)
+                      <span style="font-size:18px;color:{{ $i <= $sudahReviewSeller->rating ? '#F59E0B' : '#D1D5DB' }}">★</span>
+                    @endfor
+                  </div>
+                  @if($sudahReviewSeller->comment)
+                    <p style="font-size:13px;color:var(--text);margin:0">"{{ $sudahReviewSeller->comment }}"</p>
+                  @endif
+                  <p style="font-size:11px;color:var(--text2);margin-top:6px">✅ Review sudah dikirim</p>
+                </div>
+              @else
+                {{-- Belum review — tampilkan form --}}
+                <form method="POST" action="{{ route('seller.review.store', $penjualTarget->id_user) }}">
+                  @csrf
+                  <div style="margin-bottom:10px">
+                    <div class="seller-star-select" style="display:flex;gap:4px;flex-direction:row-reverse;justify-content:flex-end">
+                      @for($i = 5; $i >= 1; $i--)
+                        <input type="radio" name="rating" id="sstar{{ $i }}" value="{{ $i }}"
+                               style="display:none" {{ $i === 5 ? 'checked' : '' }}>
+                        <label for="sstar{{ $i }}"
+                               style="font-size:28px;color:#D1D5DB;cursor:pointer;transition:color .15s"
+                               onmouseover="hoverStars({{ $i }})"
+                               onmouseout="resetStars()">★</label>
+                      @endfor
+                    </div>
+                  </div>
+                  <textarea name="comment" rows="2"
+                            style="width:100%;font-size:12px;padding:8px;border:1.5px solid var(--border);border-radius:8px;resize:none;background:var(--white);color:var(--text)"
+                            placeholder="Ceritakan pengalamanmu bertransaksi dengan penjual ini... (opsional)"></textarea>
+                  <button class="btn btn-primary btn-full" type="submit" style="font-size:13px;margin-top:8px">
+                    ⭐ Kirim Review Penjual
+                  </button>
+                </form>
+              @endif
+            </div>
           @endif
         @endif
       </div>
@@ -225,5 +280,34 @@ function previewBukti(input) {
         preview.style.display = 'none';
     }
 }
+
+// ─── Seller Star Rating ───────────────────────────────────────
+function getStarLabels() {
+    return document.querySelectorAll('.seller-star-select label');
+}
+
+function hoverStars(n) {
+    getStarLabels().forEach(label => {
+        const val = parseInt(label.getAttribute('for').replace('sstar', ''));
+        label.style.color = val <= n ? '#F59E0B' : '#D1D5DB';
+    });
+}
+
+function resetStars() {
+    const checked = document.querySelector('.seller-star-select input:checked');
+    const selected = checked ? parseInt(checked.value) : 5;
+    getStarLabels().forEach(label => {
+        const val = parseInt(label.getAttribute('for').replace('sstar', ''));
+        label.style.color = val <= selected ? '#F59E0B' : '#D1D5DB';
+    });
+}
+
+// Inisialisasi warna bintang sesuai checked saat load
+document.addEventListener('DOMContentLoaded', function () {
+    resetStars();
+    document.querySelectorAll('.seller-star-select input').forEach(input => {
+        input.addEventListener('change', resetStars);
+    });
+});
 </script>
 @endpush

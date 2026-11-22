@@ -21,7 +21,7 @@ class HomeController extends Controller
             $q->where('status', 'tersedia');
         }])->orderBy('nama_kategori')->get();
 
-        $query = Produk::with(['kategori', 'penjual', 'foto'])
+        $query = Produk::with(['kategori', 'penjual.sellerReviewsReceived', 'foto'])
             ->where('status', 'tersedia');
 
         if ($q) {

@@ -2,6 +2,75 @@
 @section('title', $produk->nama_produk . ' — SecondLife')
 @section('content')
 
+<style>
+.detail-foto .foto-main {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.detail-foto .foto-main:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.foto-thumbs {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.foto-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.foto-thumb:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#photoModal img {
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .detail-foto .foto-main {
+    max-width: 100%;
+  }
+  
+  .foto-thumb {
+    width: 60px;
+    height: 60px;
+  }
+}
+</style>
+
 <div class="detail-wrap">
 
   <!-- BREADCRUMB -->
@@ -18,13 +87,15 @@
       <div class="detail-foto">
         @if($produk->foto->isNotEmpty())
           <img src="{{ asset('storage/produk/'.$produk->foto->first()->foto) }}"
-               alt="{{ $produk->nama_produk }}" class="foto-main" id="fotoMain">
+               alt="{{ $produk->nama_produk }}" class="foto-main" id="fotoMain"
+               onclick="openPhotoModal(this.src)" style="cursor:pointer;transition:all 0.3s">
           @if($produk->foto->count() > 1)
             <div class="foto-thumbs">
               @foreach($produk->foto as $foto)
                 <img src="{{ asset('storage/produk/'.$foto->foto) }}"
                      alt="" class="foto-thumb"
-                     onclick="document.getElementById('fotoMain').src=this.src">
+                     onclick="document.getElementById('fotoMain').src=this.src; openPhotoModal(this.src)"
+                     style="cursor:pointer;transition:all 0.2s">
               @endforeach
             </div>
           @endif
@@ -53,16 +124,26 @@
       @endif
 
       <!-- PENJUAL -->
-      <div class="seller-card">
-        <div class="seller-avatar">{{ strtoupper(substr($produk->penjual->nama, 0, 2)) }}</div>
-        <div>
-          <strong>{{ $produk->penjual->nama }}</strong>
-          <div style="font-size:12px;color:var(--text2)">📍 {{ $produk->penjual->lokasi ?? '-' }}</div>
-          <div style="font-size:12px;color:#EF9F27">
-            ⭐ {{ $produk->avgRating() }} ({{ $produk->review->count() }} ulasan)
+      <a href="{{ route('seller.profile', $produk->penjual->id_user) }}"
+         style="text-decoration:none;color:inherit;display:block">
+        <div class="seller-card" style="cursor:pointer;transition:all .2s"
+             onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,0.1)'"
+             onmouseout="this.style.boxShadow=''">
+          <div class="seller-avatar">{{ strtoupper(substr($produk->penjual->nama, 0, 2)) }}</div>
+          <div>
+            <strong>{{ $produk->penjual->nama }}</strong>
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:1px">Lihat profil & ulasan →</div>
+            <div style="font-size:12px;color:var(--text2)">📍 {{ $produk->penjual->lokasi ?? '-' }}</div>
+            @php
+              $sellerAvg   = $produk->penjual->avgSellerRating();
+              $sellerCount = $produk->penjual->sellerReviewsReceived->count();
+            @endphp
+            <div style="font-size:12px;color:#EF9F27">
+              ⭐ {{ $sellerAvg }} ({{ $sellerCount }} ulasan)
+            </div>
           </div>
         </div>
-      </div>
+      </a>
 
       <!-- TOMBOL BELI -->
       @if($produk->status === 'tersedia')
@@ -154,5 +235,103 @@
   </div>
 
 </div><!-- /detail-wrap -->
+
+<!-- PHOTO MODAL GALLERY -->
+<div id="photoModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10000;align-items:center;justify-content:center;">
+  <div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+    <img id="photoModalImg" src="" alt="" style="max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+    
+    <!-- Info & Controls -->
+    <div style="margin-top:20px;display:flex;gap:20px;align-items:center;justify-content:center;color:white;">
+      <button id="prevPhotoBtn" onclick="previousPhoto()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;transition:all 0.2s;" title="Foto Sebelumnya">❮</button>
+      <span id="photoCounter" style="font-size:14px;min-width:60px;text-align:center;font-weight:600;"></span>
+      <button id="nextPhotoBtn" onclick="nextPhoto()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;transition:all 0.2s;" title="Foto Berikutnya">❯</button>
+    </div>
+    
+    <!-- Close Button -->
+    <button onclick="closePhotoModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.2);border:none;color:white;font-size:28px;cursor:pointer;font-weight:700;width:40px;height:40px;border-radius:50%;transition:all 0.2s;" title="Tutup">✕</button>
+  </div>
+</div>
+
+@php
+$photoUrls = [];
+foreach($produk->foto as $foto) {
+  $photoUrls[] = asset('storage/produk/' . $foto->foto);
+}
+@endphp
+
+<script>
+let currentPhotoIndex = 0;
+
+let photos = JSON.parse('@json($photoUrls)');
+
+function openPhotoModal(src) {
+  if (!photos || photos.length === 0 || !src) return;
+  currentPhotoIndex = photos.indexOf(src);
+  if (currentPhotoIndex === -1) currentPhotoIndex = 0;
+  updatePhotoModal();
+  const modal = document.getElementById('photoModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePhotoModal() {
+  const modal = document.getElementById('photoModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+function updatePhotoModal() {
+  if (!photos || photos.length === 0) return;
+  const img = document.getElementById('photoModalImg');
+  const counter = document.getElementById('photoCounter');
+  const prevBtn = document.getElementById('prevPhotoBtn');
+  const nextBtn = document.getElementById('nextPhotoBtn');
+  
+  img.src = photos[currentPhotoIndex];
+  counter.textContent = (currentPhotoIndex + 1) + ' / ' + photos.length;
+  
+  prevBtn.style.display = currentPhotoIndex > 0 ? 'block' : 'none';
+  nextBtn.style.display = currentPhotoIndex < photos.length - 1 ? 'block' : 'none';
+}
+
+function previousPhoto() {
+  if (!photos || photos.length === 0) return;
+  if (currentPhotoIndex > 0) {
+    currentPhotoIndex--;
+    updatePhotoModal();
+  }
+}
+
+function nextPhoto() {
+  if (!photos || photos.length === 0) return;
+  if (currentPhotoIndex < photos.length - 1) {
+    currentPhotoIndex++;
+    updatePhotoModal();
+  }
+}
+
+// Close modal when clicking outside image
+const photoModal = document.getElementById('photoModal');
+if (photoModal) {
+  photoModal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePhotoModal();
+    }
+  });
+}
+
+// Navigation with keyboard
+document.addEventListener('keydown', function(e) {
+  const modal = document.getElementById('photoModal');
+  if (modal && modal.style.display === 'flex') {
+    if (e.key === 'Escape') closePhotoModal();
+    if (e.key === 'ArrowLeft') previousPhoto();
+    if (e.key === 'ArrowRight') nextPhoto();
+  }
+});
+</script>
 
 @endsection

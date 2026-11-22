@@ -10,7 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IsAdmin
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, callable $next): Response
+{
     {
         if (Auth::check()) {
             // Cek apakah user yang login punya id_role = 1 (Admin) di tabel pivot
@@ -27,4 +28,5 @@ class IsAdmin
         // Jika bukan admin, tendang ke halaman utama dengan pesan error
         return redirect('/')->with('error', 'Akses ditolak! Halaman tersebut khusus Admin.');
     }
+}
 }

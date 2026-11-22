@@ -9,45 +9,59 @@ use App\Models\Produk;
 use App\Models\DetailTransaksi;
 use App\Models\Review;
 use App\Models\ProdukFoto;
+use App\Models\User;
 
 class ProfilController extends Controller {
     public function index() {
         return view('profil', ['user'=>Auth::user()]);
     }
-    public function update(Request $request) {
-        $user = Auth::user();
+    public function update(Request $request)
+{
+    $user = User::findOrFail(Auth::id());
 
-        // form Ganti Password
-        if ($request->tab === 'password') {
-            $request->validate([
-                'password' => 'required|min:6|confirmed',
-            ]);
-            $user->update(['password' => Hash::make($request->password)]);
-            return back()->with('success', 'Password berhasil diperbarui!');
-        }
+    // Form Ganti Password
+    if ($request->tab === 'password') {
 
-        // form Edit Profil
         $request->validate([
-            'nama'        => 'required|string|max:150',
-            'no_hp'       => 'required|string|max:20',
-            'lokasi'      => 'required|string|max:200',
-            'foto_ktm'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password' => 'required|min:6|confirmed',
         ]);
-        
-        $data = $request->only('nama','no_hp','lokasi');
-        
-        if ($request->hasFile('foto_ktm')) {
-            if ($user->foto_ktm) Storage::disk('public')->delete('ktm/'.$user->foto_ktm);
-            $file = $request->file('foto_ktm');
-            $nama = 'ktm_'.uniqid().'.'.$file->extension();
-            $file->storeAs('ktm',$nama,'public');
-            $data['foto_ktm'] = $nama;
-        }
-        
-        $user->update($data);
-        return back()->with('success','Profil berhasil diperbarui!');
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diperbarui!');
     }
 
+    // Form Edit Profil
+    $request->validate([
+        'nama'     => 'required|string|max:150',
+        'no_hp'    => 'required|string|max:20',
+        'lokasi'   => 'required|string|max:200',
+        'foto_ktm' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $user->nama = $request->nama;
+    $user->no_hp = $request->no_hp;
+    $user->lokasi = $request->lokasi;
+
+    if ($request->hasFile('foto_ktm')) {
+
+        if (!empty($user->foto_ktm)) {
+            Storage::disk('public')->delete('ktm/' . $user->foto_ktm);
+        }
+
+        $file = $request->file('foto_ktm');
+        $namaFile = 'ktm_' . uniqid() . '.' . $file->extension();
+
+        $file->storeAs('ktm', $namaFile, 'public');
+
+        $user->foto_ktm = $namaFile;
+    }
+
+    $user->save();
+
+    return back()->with('success', 'Profil berhasil diperbarui!');
+}
     /**
      * Hapus akun 
      */

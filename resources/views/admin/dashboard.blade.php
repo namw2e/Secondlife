@@ -15,6 +15,7 @@
         @endif
       </a>
       <a class="btn btn-ghost" href="{{ route('admin.transaksi.index') }}" style="padding:9px 18px;font-size:14px">💰 Semua Transaksi</a>
+      <a class="btn btn-ghost" href="{{ route('admin.reviews.index') }}" style="padding:9px 18px;font-size:14px">⭐ Ulasan Penjual</a>
     </div>
   </div>
 
@@ -55,6 +56,7 @@
         ['route'=>'admin.transaksi.index','icon'=>'💰','label'=>'Semua Transaksi','badge'=>$trxMenunggu],
         ['route'=>'admin.kategori.index','icon'=>'🏷️','label'=>'Kelola Kategori','badge'=>0],
         ['route'=>'admin.kategori.requests','icon'=>'📨','label'=>'Request Kategori','badge'=>0],
+        ['route'=>'admin.reviews.index','icon'=>'⭐','label'=>'Moderasi Ulasan','badge'=>0],
       ] as $m)
         <a class="trx-card" href="{{ route($m['route']) }}" style="display:flex;text-decoration:none;color:inherit;margin-bottom:.5rem">
           <div class="trx-icon" style="font-size:20px">{{ $m['icon'] }}</div>

@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\RequestKategoriController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SellerReviewController;
 use App\Http\Controllers\Penjual\PenjualController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminProdukController;
@@ -16,10 +17,14 @@ use App\Http\Controllers\Admin\AdminTransaksiController;
 use App\Http\Controllers\Admin\AdminKategoriController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVerifikasiController;
+use App\Http\Controllers\Admin\AdminReviewController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 // ── PUBLIC ──────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/produk/{id}', [ProdukController::class, 'detail'])->name('produk.detail');
+Route::get('/penjual/{sellerId}/ulasan', [SellerReviewController::class, 'profile'])->name('seller.profile');
 
 // ── AUTH ────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -27,6 +32,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
+    // Forgot Password & Reset Password
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
 });
 
 // Daftar Penjual (bisa diakses user yang sudah login maupun belum login)
@@ -66,8 +77,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/{id}/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/transaksi/{id}/chat', [ChatController::class, 'store'])->name('chat.store');
 
-    // Review
+    // Review produk
     Route::post('/produk/{id}/review', [ReviewController::class, 'store'])->name('review.store');
+
+    // Review penjual (seller review)
+    Route::post('/penjual/{sellerId}/review', [SellerReviewController::class, 'store'])->name('seller.review.store');
 
     // ── PENJUAL ──────────────────────────────────────────────────
     Route::middleware('role:penjual')->prefix('penjual')->name('penjual.')->group(function () {
@@ -107,4 +121,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/request-kategori', [AdminKategoriController::class, 'requests'])->name('kategori.requests');
     Route::post('/request-kategori/{id}', [AdminKategoriController::class, 'prosesRequest'])->name('kategori.proses');
+
+    // Moderasi ulasan penjual
+    Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::delete('/reviews/{id}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
 });

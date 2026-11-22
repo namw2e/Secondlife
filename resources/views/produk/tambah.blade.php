@@ -16,12 +16,12 @@
       @csrf
 
       <div class="form-group">
-        <label class="form-label">Foto Produk <span style="color:var(--text2);font-weight:400">(maks 5 foto, masing-masing 2MB)</span></label>
+        <label class="form-label">Foto Produk <span style="color:var(--text2);font-weight:500;font-size:13px">(maks 5 foto, masing-masing 2MB)</span></label>
         <div class="upload-area" onclick="document.getElementById('fotoInput').click()">
           <input type="file" id="fotoInput" name="foto[]" multiple accept="image/*" onchange="previewFotos(this)" required>
           <div id="fotoPreview">
             <div style="font-size:36px">📷</div>
-            <div style="font-size:13px;color:var(--text2)">Klik untuk pilih foto</div>
+            <div style="font-size:14px;color:var(--text2);font-weight:500;letter-spacing:0.3px">Klik untuk pilih foto</div>
           </div>
         </div>
       </div>
@@ -30,13 +30,14 @@
         <label class="form-label">Nama Produk</label>
         <input class="form-control" type="text" name="nama_produk"
                placeholder="Contoh: Buku Kalkulus Purcell Edisi 9"
+               style="font-size:15px;font-weight:500;letter-spacing:0.3px"
                value="{{ old('nama_produk') }}" required>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Kategori</label>
-          <select class="form-control" name="id_kategori" required>
+          <select class="form-control" name="id_kategori" style="font-size:15px;font-weight:500" required>
             <option value="">Pilih kategori...</option>
             @foreach($kategori as $k)
               <option value="{{ $k->id_kategori }}" {{ old('id_kategori') == $k->id_kategori ? 'selected' : '' }}>
@@ -44,13 +45,13 @@
               </option>
             @endforeach
           </select>
-          <small style="font-size:12px;color:var(--text2);margin-top:5px;display:block">
+          <small style="font-size:13px;color:var(--text2);margin-top:6px;display:block;font-weight:500">
             Tidak ada yang cocok? <a href="{{ route('request.kategori') }}" style="color:var(--accent);font-weight:600">Request kategori baru →</a>
           </small>
         </div>
         <div class="form-group">
           <label class="form-label">Kondisi</label>
-          <select class="form-control" name="kondisi">
+          <select class="form-control" name="kondisi" style="font-size:15px;font-weight:500">
             <option value="Baru"  {{ old('kondisi') === 'Baru'  ? 'selected' : '' }}>Baru</option>
             <option value="Bekas" {{ old('kondisi', 'Bekas') === 'Bekas' ? 'selected' : '' }}>Bekas</option>
           </select>
@@ -60,16 +61,18 @@
       <div class="form-group">
         <label class="form-label">Harga (Rp)</label>
         <div style="position:relative">
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-weight:600;font-size:14px">Rp</span>
-          <input class="form-control" type="number" name="harga"
-                 placeholder="0" value="{{ old('harga') }}"
-                 style="padding-left:38px" required>
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-weight:700;font-size:16px">Rp</span>
+          <input class="form-control" type="text" id="harga_display"
+                 placeholder="0" value="{{ old('harga') ? number_format(old('harga'),0,',','.') : '' }}"
+                 style="padding-left:38px;font-size:18px;font-weight:700;letter-spacing:0.5px" oninput="formatHarga(this)" required>
+          <input type="hidden" name="harga" id="harga" value="{{ old('harga') ?: '' }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">Deskripsi Produk</label>
         <textarea class="form-control" name="deskripsi" rows="5"
+                  style="font-size:15px;font-weight:500;letter-spacing:0.3px;line-height:1.6"
                   placeholder="Jelaskan kondisi barang, alasan jual, kelengkapan, dll...">{{ old('deskripsi') }}</textarea>
       </div>
 
@@ -83,6 +86,15 @@
 
 @push('scripts')
 <script>
+function formatHarga(input) {
+  // remove non-digits
+  const raw = input.value.replace(/[^0-9]/g, '');
+  // update display with locale formatting
+  input.value = raw ? parseInt(raw).toLocaleString('id-ID') : '';
+  // update hidden numeric input
+  document.getElementById('harga').value = raw ? parseInt(raw) : '';
+}
+
 function previewFotos(input) {
   const preview = document.getElementById('fotoPreview');
   if (!input.files.length) return;
@@ -102,7 +114,7 @@ function previewFotos(input) {
     reader.readAsDataURL(file);
   });
   const info = document.createElement('div');
-  info.style.cssText = 'margin-top:8px;font-size:13px;color:var(--text2)';
+  info.style.cssText = 'margin-top:8px;font-size:14px;color:var(--text2);font-weight:500;letter-spacing:0.3px';
   info.textContent = input.files.length + ' foto dipilih';
   preview.appendChild(info);
 }
