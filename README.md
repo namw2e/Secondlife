@@ -1,59 +1,233 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SecondLife Marketplace Barang Preloved Mahasiswa
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**SecondLife** adalah platform marketplace berbasis web untuk jual-beli barang bekas (preloved) khususnya di lingkungan mahasiswa. Dibangun dengan **Laravel 12**, aplikasi ini mempertemukan pembeli dan penjual dalam satu ekosistem yang aman, mudah, dan terpercaya.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Autentikasi & Manajemen Akun
+- Registrasi & Login dengan sistem role (Admin, Penjual, Pembeli)
+- Lupa password & reset password via email
+- Kelola profil: foto, nomor HP, lokasi, dan hapus akun
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Penjual
+- Daftar sebagai penjual dengan upload KTM (verifikasi admin)
+- Dashboard penjual: kelola produk, pantau transaksi masuk
+- Tambah, edit, hapus, dan publish/unpublish produk
+- Upload hingga multi-foto untuk setiap produk
+- Balas ulasan pembeli
+- Jadwal COD (Cash on Delivery) langsung dari platform
 
-## Learning Laravel
+### Pembeli
+- Jelajahi produk dengan filter: **kategori**, **kondisi**, **rentang harga**, dan **urutan**
+- Pencarian produk & penjual
+- Proses checkout dengan pilihan metode pembayaran
+- Riwayat transaksi lengkap
+- Upload bukti pembayaran
+- Beri ulasan produk & ulasan penjual
+- Chat langsung dengan penjual per transaksi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Admin
+- Dashboard monitoring platform
+- Verifikasi akun penjual (setujui / tolak)
+- Kelola kategori & proses request kategori dari pengguna
+- Kelola produk (publish/unpublish/hapus)
+- Pantau semua transaksi
+- Manajemen pengguna (aktifkan / nonaktifkan)
+- Moderasi ulasan penjual
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Struktur Peran (Role)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Role | Akses |
+|------|-------|
+| **Admin** | Full kontrol platform, verifikasi penjual, moderasi konten |
+| **Penjual** | Kelola produk & transaksi milik sendiri |
+| **Pembeli** | Browse produk, checkout, review, chat |
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Database & Migrasi
 
-## Contributing
+Tabel utama yang digunakan:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Tabel | Keterangan |
+|-------|-----------|
+| `users` | Data pengguna |
+| `roles` | Daftar role (admin, penjual, pembeli) |
+| `user_roles` | Relasi many-to-many user ↔ role |
+| `kategori` | Kategori produk |
+| `produk` | Data produk yang dijual |
+| `produk_foto` | Foto-foto produk |
+| `transaksi` | Data transaksi jual-beli |
+| `detail_transaksi` | Detail item per transaksi |
+| `jadwal_cod` | Jadwal COD antara penjual & pembeli |
+| `review` | Ulasan produk oleh pembeli |
+| `seller_reviews` | Ulasan penjual oleh pembeli |
+| `chat` | Pesan chat per transaksi |
+| `request_kategori` | Request kategori baru dari pengguna |
+| `password_reset_tokens` | Token reset password |
+| `sessions` | Sesi login pengguna |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Cara Menjalankan Proyek
 
-## Security Vulnerabilities
+### Prasyarat
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL (via XAMPP atau sejenisnya)
+- Laravel 12
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Langkah Instalasi
 
-## License
+**1. Clone repository**
+```bash
+git clone https://github.com/namw2e/Secondlife.git
+cd Secondlife
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**2. Install dependensi PHP & Node.js**
+```bash
+composer install
+npm install
+```
+
+**3. Salin file environment & generate key**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+**4. Konfigurasi database di `.env`**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=secondlife
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+**5. Konfigurasi email untuk fitur reset password di `.env`**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your_email@gmail.com
+MAIL_FROM_NAME="SecondLife"
+```
+
+**6. Jalankan migrasi & seeder**
+```bash
+php artisan migrate --seed
+```
+
+**7. Build aset frontend**
+```bash
+npm run build
+# atau untuk development (hot reload):
+npm run dev
+```
+
+**8. Jalankan server**
+```bash
+php artisan serve
+```
+
+Akses aplikasi di: **http://localhost:8000**
+
+---
+
+## Akun Demo (Setelah Seeder)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@preloved.mhs` | `admin123` |
+| Penjual | `penjual@demo.com` | `password` |
+| Pembeli | `pembeli@demo.com` | `password` |
+
+---
+
+## Tech Stack
+
+| Layer | Teknologi |
+|-------|-----------|
+| Backend | Laravel 12 (PHP 8.2+) |
+| Frontend | Blade Template, Bootstrap / Tailwind CSS |
+| Database | MySQL |
+| Build Tool | Vite + NPM |
+| Auth | Session-based dengan Middleware Role |
+| Email | Laravel Mail (SMTP) |
+
+---
+
+## Struktur Direktori Utama
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Admin/          # Controller khusus admin
+│   │   ├── Auth/           # Forgot & reset password
+│   │   ├── Penjual/        # Dashboard penjual
+│   │   ├── AuthController.php
+│   │   ├── HomeController.php
+│   │   ├── ProdukController.php
+│   │   ├── TransaksiController.php
+│   │   ├── ProfilController.php
+│   │   ├── ReviewController.php
+│   │   ├── SellerReviewController.php
+│   │   └── ChatController.php
+│   └── Middleware/
+│       ├── IsAdmin.php
+│       └── RoleMiddleware.php
+├── Models/                 # Eloquent Models
+└── helpers.php             # Helper functions
+
+resources/views/
+├── admin/                  # Tampilan panel admin
+├── auth/                   # Login, register, forgot/reset password
+├── layouts/                # Layout utama (app.blade.php)
+├── penjual/                # Dashboard penjual
+├── produk/                 # Detail, tambah, edit produk
+├── seller/                 # Profil & ulasan penjual
+├── transaksi/              # Checkout, detail, chat, sukses
+└── home.blade.php          # Halaman utama marketplace
+
+database/
+├── migrations/             # Skema database
+└── seeders/
+    ├── DatabaseSeeder.php
+    └── SellerReviewSeeder.php
+```
+
+---
+
+## Kategori Produk
+
+- Buku & Modul
+- Elektronik
+- Alat Tulis & Stationery
+- Fashion & Pakaian
+- Perabot Kos
+- Olahraga
+- Kendaraan & Aksesori
+- Makanan & Minuman
+- Jasa & Lainnya
+
+---
+
+## Lisensi
+
+Proyek ini dibuat untuk keperluan tugas akhir semester (UAS) dan bersifat open-source untuk keperluan akademik.
+
+---
+
+> Dikembangkan dengan ❤️ menggunakan [Laravel](https://laravel.com) · Universitas Pembangunan Nasional "Veteran" Yogyakarta
